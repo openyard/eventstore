@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "eventstore/pkg/genproto/grpcapi;grpcapi";
+
+import public "eventstore.proto";
+
+service EventStore {
+  rpc Append(proto.AppendRequest) returns (Empty) {}
+  rpc Read(proto.ReadRequest) returns (Streams) {}
+  rpc ReadAt(proto.ReadAtRequest) returns (Streams) {}
+}
+
+service Transport {
+  rpc Subscribe(proto.SubscriptionRequest) returns (stream Entries) {} // volatile subscriptions
+  rpc SubscribeWithID(proto.SubscriptionWithIDRequest) returns (stream Entries) {} // persistent subscriptions
+  rpc SubscribeWithOffset(proto.SubscriptionWithOffsetRequest) returns (stream Entries) {} // catch-up subscriptions
+}
+

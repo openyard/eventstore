@@ -1,0 +1,3 @@
+mem-eventstore
+pkg/genproto/*
+.idea

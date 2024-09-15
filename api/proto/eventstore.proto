@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "eventstore/pkg/genproto/grpcapi;grpcapi";
+
+import public "google/type/date.proto";
+import "google/protobuf/timestamp.proto";
+
+message Empty {}
+
+message StreamData {
+  string Name = 1;
+  uint64 ExpectedVersion = 2;
+  repeated Event Events = 3;
+}
+
+message AppendRequest {
+  repeated StreamData StreamData = 1;
+}
+
+message ReadRequest {
+  repeated string Streams = 1;
+}
+
+message ReadAtRequest {
+  google.protobuf.Timestamp At = 1;
+  repeated string Streams = 2;
+}
+
+message SubscriptionRequest {
+  uint32 limit = 1;
+}
+
+message SubscriptionWithIDRequest {
+  string subscriptionID = 1;
+  uint32 limit = 2;
+}
+
+message SubscriptionWithOffsetRequest {
+  uint64 offset = 1;
+  uint32 limit = 2;
+}
+
+message Event {
+  string ID = 1;
+  string Name = 2;
+  string AggregateID = 3;
+  uint64 Pos = 4;
+  bytes Payload = 5;
+  google.protobuf.Timestamp OccurredAt = 6;
+}
+
+message Streams {
+  repeated Stream Streams = 1;
+}
+
+message Stream {
+  string Name = 1;
+  uint64 Version = 2;
+  repeated Event Events = 3;
+}
+
+message Entry {
+  uint64 GlobalPos = 1;
+  string StreamName = 2;
+  uint64 StreamPos = 3;
+  Event Event = 4;
+}
+
+message Entries {
+  repeated Entry Entries = 1;
+}
+
+
