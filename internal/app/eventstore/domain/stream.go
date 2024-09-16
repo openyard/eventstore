@@ -67,7 +67,8 @@ func (s *Stream) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if uint64(len(s.events)) != s.version {
-		return fmt.Errorf("!!! version mismatch in stream <%s>: version=%d, events=%d", s.name, s.version, len(s.events))
+		return fmt.Errorf("[ERROR]\t %T.UnmarshalJSON !!! version mismatch in stream <%s>: version=%d, events=%d",
+			s, s.name, s.version, len(s.events))
 	}
 	return nil
 }

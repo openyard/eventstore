@@ -34,16 +34,3 @@ func domain2api(streamName string, events map[uint64]*domain.Event) *grpcapi.Str
 	}
 	return res
 }
-
-//func events2stream(events []*Event) []byte {
-//	for idx, e := range events {
-//		i := make([]byte, 4)
-//		binary.LittleEndian.PutUint32(i, uint32(idx))
-//		v, err := e.MarshalJSON()
-//		if err != nil {
-//			log.Printf("[ERROR] %T.append - couldn't marshal event <#%d>: %s", s, idx, err)
-//			return err
-//		}
-//		stream = append(stream, i, v)
-//	}
-//}

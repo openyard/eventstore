@@ -115,5 +115,24 @@ func (s *Service) read(_ context.Context, cmd ReadCommand) ([]Stream, error) {
 }
 
 func (s *Service) readAt(_ context.Context, cmd ReadAtCommand) ([]Stream, error) {
-	return nil, nil
+	result := make([]Stream, 0)
+	for _, stream := range cmd.streams {
+		streamData, err := s.kvs.Get(KvsBucketContent, stream)
+		if err != nil {
+			return result, err
+		}
+		var elem Stream
+		if err := elem.UnmarshalJSON(streamData); err != nil {
+			return result, err
+		}
+		ev := make(map[uint64]*Event)
+		for i, e := range elem.events {
+			if !e.OccurredAt().After(cmd.at) {
+				ev[i] = e
+			}
+		}
+		elem.events = ev
+		result = append(result, elem)
+	}
+	return result, nil
 }
