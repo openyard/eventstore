@@ -1,0 +1,34 @@
+{
+  "StreamData": [
+    {
+      "Name": "TestStream-1",
+      "ExpectedVersion": 0,
+      "Events": [
+        {
+          "ID": "0f2ca400-7361-11ef-ae94-bb1bd61dfb2b",
+          "Name": "TestEvent",
+          "AggregateID": "4711",
+          "Pos": 1,
+          "Payload": "aGVsbG8gZXZlbnRzdG9yZQ==",
+          "OccurredAt": "2024-09-14T12:51:02.843674125+02:00"
+        },
+        {
+          "ID": "0fea0842-7361-11ef-a511-0bea38c8d5d4",
+          "Name": "TestEvent",
+          "AggregateID": "4711",
+          "Pos": 2,
+          "Payload": "aGVsbG8gZXZlbnRzdG9yZQ==",
+          "OccurredAt": "2024-09-14T12:59:03.843674125+02:00"
+        },
+        {
+          "ID": "2c39550c-7361-11ef-ba62-ef9dbc89f85a",
+          "Name": "TestEvent",
+          "AggregateID": "4711",
+          "Pos": 3,
+          "Payload": "aGVsbG8gZXZlbnRzdG9yZQ==",
+          "OccurredAt": "2024-09-14T13:01:04.843674125+02:00"
+        }
+      ]
+    }
+  ]
+}
