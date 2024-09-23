@@ -2,7 +2,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 )
 
@@ -29,7 +28,7 @@ func (s *Stream) Events() map[uint64]*Event {
 func buildStream(name string, version uint64, events map[uint64]*Event) *Stream {
 	return &Stream{
 		name:    name,
-		version: version + uint64(len(events)),
+		version: version,
 		events:  events,
 	}
 }
@@ -65,10 +64,6 @@ func (s *Stream) UnmarshalJSON(data []byte) error {
 			}
 			s.events[ki] = &e
 		}
-	}
-	if uint64(len(s.events)) != s.version {
-		return fmt.Errorf("[ERROR]\t %T.UnmarshalJSON !!! version mismatch in stream <%s>: version=%d, events=%d",
-			s, s.name, s.version, len(s.events))
 	}
 	return nil
 }

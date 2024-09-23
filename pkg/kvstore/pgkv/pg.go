@@ -1,12 +1,12 @@
-package kvstore
+package pgkv
 
 import (
 	"database/sql"
 
-	"github.com/openyard/eventstore/internal/app/eventstore/domain"
+	"github.com/openyard/eventstore/internal/app/kvstore"
 )
 
-var _ domain.KeyValueStore = (*PostgresKVS)(nil)
+var _ kvstore.KeyValueStore = (*PostgresKVS)(nil)
 
 type PostgresKVS struct {
 	db *sql.DB

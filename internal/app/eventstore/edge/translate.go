@@ -3,6 +3,7 @@ package edge
 import (
 	"github.com/openyard/eventstore/internal/app/eventstore/domain"
 	"github.com/openyard/eventstore/pkg/genproto/grpcapi"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

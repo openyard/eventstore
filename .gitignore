@@ -1,3 +1,4 @@
 mem-eventstore
-pkg/genproto/*
+pkg/genproto/grpcapi/*
+!pkg/genproto/grpcapi/package.go
 .idea
