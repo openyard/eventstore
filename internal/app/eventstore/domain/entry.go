@@ -12,21 +12,65 @@ type Entry struct {
 	Event     *Event
 }
 
+/*
+message Event {
+  string ID = 1;
+  string Name = 2;
+  string AggregateID = 3;
+  string CorrelationID = 4;
+  string CausationID = 5;
+  string ContentType = 6;
+  google.protobuf.Timestamp OccurredAt = 7;
+  map<string, string> Meta = 8;
+  bytes Payload = 9;
+}
+*/
+
 type Event struct {
-	id          string
-	name        string
-	aggregateID string
-	occurredAt  time.Time
-	payload     []byte
+	id            string
+	name          string
+	aggregateID   string
+	correlationID string
+	causationID   string
+	contentType   string
+	occurredAt    time.Time
+	meta          map[string]string
+	payload       []byte
 }
 
-func NewEventAt(id, name, aggregateID string, occurredAt time.Time, payload []byte) *Event {
+type EventOpt func(e *Event)
+
+func NewEventAt(id, name, aggregateID string, occurredAt time.Time, payload []byte, opts ...EventOpt) *Event {
 	return &Event{
 		id:          id,
 		name:        name,
 		aggregateID: aggregateID,
 		occurredAt:  occurredAt,
 		payload:     payload,
+	}
+}
+
+func WithCorrelationID(correlationID string) EventOpt {
+	return func(e *Event) {
+		e.correlationID = correlationID
+	}
+}
+
+func WithCausationID(causationID string) EventOpt {
+	return func(e *Event) {
+		e.causationID = causationID
+	}
+}
+
+func WithContentType(contentType string) EventOpt {
+	return func(e *Event) {
+		e.contentType = contentType
+	}
+}
+
+func WithMeta(meta map[string]string) EventOpt {
+	return func(e *Event) {
+		e.meta = meta
 	}
 }
 
@@ -42,12 +86,28 @@ func (e *Event) AggregateID() string {
 	return e.aggregateID
 }
 
-func (e *Event) Payload() []byte {
-	return e.payload
+func (e *Event) CorrelationID() string {
+	return e.correlationID
+}
+
+func (e *Event) CausationID() string {
+	return e.causationID
+}
+
+func (e *Event) ContentType() string {
+	return e.contentType
 }
 
 func (e *Event) OccurredAt() time.Time {
 	return e.occurredAt
+}
+
+func (e *Event) Meta() map[string]string {
+	return e.meta
+}
+
+func (e *Event) Payload() []byte {
+	return e.payload
 }
 
 // MarshalJSON is implementation of json.Marshaler

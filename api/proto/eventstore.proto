@@ -46,9 +46,12 @@ message Event {
   string ID = 1;
   string Name = 2;
   string AggregateID = 3;
-  uint64 Pos = 4;
-  bytes Payload = 5;
-  google.protobuf.Timestamp OccurredAt = 6;
+  string CorrelationID = 4;
+  string CausationID = 5;
+  string ContentType = 6;
+  google.protobuf.Timestamp OccurredAt = 7;
+  map<string, string> Meta = 8;
+  bytes Payload = 9;
 }
 
 message Streams {

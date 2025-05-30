@@ -2,15 +2,16 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/bwmarrin/snowflake"
-	"github.com/openyard/eventstore/pkg/genproto/grpcapi"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"os"
 	"time"
+
+	"github.com/bwmarrin/snowflake"
+	"github.com/openyard/eventstore/pkg/genproto/grpcapi"
+
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const threshold = 100000 // threshold to print processing output
@@ -86,7 +87,7 @@ func main() {
 	w := bufio.NewWriter(f)
 	defer w.Flush()
 
-	raw, _ := json.Marshal(td)
+	raw, _ := protojson.Marshal(td)
 	w.WriteString(fmt.Sprintf("%s\n", raw))
 
 	fmt.Printf("writing results to [%s]\n", *file)
@@ -116,7 +117,6 @@ func generateEvents(count int, node *snowflake.Node, aggregateID string) []*grpc
 			ID:          node.Generate().String(),
 			Name:        fmt.Sprintf("v1/test-event"),
 			AggregateID: aggregateID,
-			Pos:         uint64(j + 1),
 			Payload:     nil,
 			OccurredAt:  timestamppb.New(time.Now()),
 		})

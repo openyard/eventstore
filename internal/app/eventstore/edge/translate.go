@@ -16,6 +16,10 @@ func api2domain(events []*grpcapi.Event) []*domain.Event {
 			e.AggregateID,
 			e.OccurredAt.AsTime(),
 			e.Payload,
+			domain.WithCorrelationID(e.CorrelationID),
+			domain.WithCausationID(e.CausationID),
+			domain.WithContentType(e.ContentType),
+			domain.WithMeta(e.Meta),
 		))
 	}
 	return res
@@ -23,14 +27,17 @@ func api2domain(events []*grpcapi.Event) []*domain.Event {
 
 func domain2api(streamName string, events map[uint64]*domain.Event) *grpcapi.Stream {
 	res := &grpcapi.Stream{Name: streamName, Version: uint64(len(events)), Events: make([]*grpcapi.Event, 0, len(events))}
-	for p, e := range events {
+	for _, e := range events {
 		res.Events = append(res.Events, &grpcapi.Event{
-			ID:          e.ID(),
-			Name:        e.Name(),
-			AggregateID: e.AggregateID(),
-			Pos:         p + 1,
-			Payload:     e.Payload(),
-			OccurredAt:  timestamppb.New(e.OccurredAt()),
+			ID:            e.ID(),
+			Name:          e.Name(),
+			AggregateID:   e.AggregateID(),
+			CorrelationID: e.CorrelationID(),
+			CausationID:   e.CausationID(),
+			ContentType:   e.ContentType(),
+			OccurredAt:    timestamppb.New(e.OccurredAt()),
+			Meta:          e.Meta(),
+			Payload:       e.Payload(),
 		})
 	}
 	return res

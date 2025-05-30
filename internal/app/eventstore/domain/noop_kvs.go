@@ -1,24 +1,23 @@
 package domain
 
-import "github.com/openyard/eventstore/internal/app/kvstore"
+import "github.com/openyard/eventstore/internal/app/persistance"
 
-var _ kvstore.KeyValueStore = (*noopKVs)(nil)
+var (
+	_ persistance.KeyValueStore  = (*noopKVS)(nil)
+	_ persistance.KeyValueStoreX = (*noopKVSX)(nil)
+)
 
-type noopKVs struct{}
+type noopKVS struct{}
 
-func (n noopKVs) AssertBucket(_ string) error {
+func (n noopKVS) Put(bucket, key string, value []byte) error {
 	return nil
 }
 
-func (n noopKVs) Put(bucket, key string, value []byte) error {
-	return nil
-}
-
-func (n noopKVs) Get(bucket, key string) ([]byte, error) {
+func (n noopKVS) Get(bucket, key string) ([]byte, error) {
 	return make([]byte, 0), nil
 }
 
-func (n noopKVs) WithTx(fn ...func() error) error {
+func (n noopKVS) WithTx(fn ...func() error) error {
 	for _, f := range fn {
 		if err := f(); err != nil {
 			return err
@@ -27,6 +26,21 @@ func (n noopKVs) WithTx(fn ...func() error) error {
 	return nil
 }
 
-func (n noopKVs) Rollback() {
-	// empty on purpose
+type noopKVSX struct{}
+
+func (n noopKVSX) Put(bucket string, keys []string, values [][]byte) error {
+	return nil
+}
+
+func (n noopKVSX) Get(bucket string, keys []string) (map[string][]byte, error) {
+	return make(map[string][]byte), nil
+}
+
+func (n noopKVSX) WithTx(fn ...func() error) error {
+	for _, f := range fn {
+		if err := f(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

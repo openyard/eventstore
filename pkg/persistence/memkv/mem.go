@@ -5,12 +5,12 @@ import (
 	"log"
 	"sync"
 
-	"github.com/openyard/eventstore/internal/app/kvstore"
+	"github.com/openyard/eventstore/internal/app/persistance"
 )
 
 var (
-	_    kvstore.KeyValueStore = (*MemoryKVS)(nil)
-	zero                       = []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	_    persistance.KeyValueStore = (*MemoryKVS)(nil)
+	zero                           = []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 )
 
 type MemoryKVS struct {
@@ -24,17 +24,10 @@ func NewMemoryKVS(buckets ...string) *MemoryKVS {
 	return memKVS
 }
 
-func (m *MemoryKVS) AssertBucket(bucket string) error {
-	if _, ok := m.buckets[bucket]; !ok {
-		return fmt.Errorf("bucket (%s) not found", bucket)
-	}
-	return nil
-}
-
 func (m *MemoryKVS) Put(bucket, key string, value []byte) error {
 	m.Lock()
 	defer m.Unlock()
-	if err := m.AssertBucket(bucket); err != nil {
+	if err := m.assertBucket(bucket); err != nil {
 		return err
 	}
 	m.buckets[bucket][key] = value
@@ -44,7 +37,7 @@ func (m *MemoryKVS) Put(bucket, key string, value []byte) error {
 func (m *MemoryKVS) Get(bucket, key string) ([]byte, error) {
 	m.Lock()
 	defer m.Unlock()
-	if err := m.AssertBucket(bucket); err != nil {
+	if err := m.assertBucket(bucket); err != nil {
 		return zero, err
 	}
 	if value, ok := m.buckets[bucket][key]; ok {
@@ -53,16 +46,18 @@ func (m *MemoryKVS) Get(bucket, key string) ([]byte, error) {
 	return zero, fmt.Errorf("key (%s:%s) not found", bucket, key)
 }
 
-func (m *MemoryKVS) Rollback() {
-	// empty on purpose
-}
-
 func (m *MemoryKVS) WithTx(fn ...func() error) error {
 	for _, f := range fn {
-
 		if err := f(); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (m *MemoryKVS) assertBucket(bucket string) error {
+	if _, ok := m.buckets[bucket]; !ok {
+		return fmt.Errorf("bucket (%s) not found", bucket)
 	}
 	return nil
 }

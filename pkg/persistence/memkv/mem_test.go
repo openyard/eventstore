@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openyard/eventstore/pkg/kvstore/memkv"
+	"github.com/openyard/eventstore/pkg/persistence/memkv"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewMemoryKVS(t *testing.T) {
 	sut := memkv.NewMemoryKVS("_index", "_meta", "_content")
-	assert.NoError(t, sut.AssertBucket("_index"))
-	assert.NoError(t, sut.AssertBucket("_meta"))
-	assert.NoError(t, sut.AssertBucket("_content"))
 
 	v, err := sut.Get("_index", "foo")
 	assert.Empty(t, v)
