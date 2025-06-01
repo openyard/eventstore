@@ -4,7 +4,7 @@
 # ########################################################## #
 
 # Check for required command tools to build or stop immediately
-EXECUTABLES = git go find pwd docker oapi-codegen go-bindata
+EXECUTABLES = git go find pwd docker
 K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
 
@@ -48,6 +48,7 @@ tools:
 	go get -tool google.golang.org/protobuf/cmd/protoc-gen-go
 	go get -tool google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	go install tool
+	go mod tidy
 
 list:
 	@grep '^[^#[:space:]].*:' Makefile

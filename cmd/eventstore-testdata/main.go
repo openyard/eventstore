@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/google/uuid"
 	"os"
 	"time"
 
@@ -106,20 +107,39 @@ func generateStream(node *snowflake.Node, i, j int) *grpcapi.StreamData {
 	return &grpcapi.StreamData{
 		Name:            streamName,
 		ExpectedVersion: 0,
-		Events:          generateEvents(j, node, streamName),
+		Events:          generateEvents(j, node, streamName, uuid.New().String(), uuid.NewString()),
 	}
 }
 
-func generateEvents(count int, node *snowflake.Node, aggregateID string) []*grpcapi.Event {
+func generateEvents(count int, node *snowflake.Node, aggregateID, correlationID, traceID string) []*grpcapi.Event {
 	events := make([]*grpcapi.Event, 0, count)
+	msgID := ""
 	for j := 0; j < count; j++ {
+		eventID := node.Generate().String()
+		causationID := getCausationID(msgID, correlationID)
 		events = append(events, &grpcapi.Event{
-			ID:          node.Generate().String(),
-			Name:        fmt.Sprintf("v1/test-event"),
-			AggregateID: aggregateID,
-			Payload:     nil,
-			OccurredAt:  timestamppb.New(time.Now()),
+			ID:            eventID,
+			Name:          fmt.Sprintf("v1/test-event"),
+			AggregateID:   aggregateID,
+			CorrelationID: correlationID,
+			CausationID:   causationID,
+			Payload:       nil,
+			OccurredAt:    timestamppb.New(time.Now()),
+			Meta: map[string]string{
+				"TraceID":       traceID,
+				"SpanID":        uuid.NewString(),
+				"CorrelationID": correlationID,
+				"CausationID":   causationID,
+			},
 		})
+		msgID = eventID
 	}
 	return events
+}
+
+func getCausationID(msgID, ID string) string {
+	if msgID != "" {
+		return msgID
+	}
+	return ID
 }

@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"github.com/openyard/eventstore/internal/app/persistance"
 	"log"
+
+	"github.com/openyard/eventstore/internal/app/persistance"
 )
 
 type KVSXServiceOpts func(*KVSXService)
@@ -96,7 +97,7 @@ func (s *KVSXService) read(_ context.Context, cmd ReadCommand) ([]Stream, error)
 	}
 	for _, stream := range streamData {
 		var elem Stream
-		if err := elem.UnmarshalJSON(stream); err != nil {
+		if err = elem.UnmarshalJSON(stream); err != nil {
 			return result, err
 		}
 		if uint64(len(elem.events)) != elem.version {

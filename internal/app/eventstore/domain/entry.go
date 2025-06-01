@@ -12,20 +12,6 @@ type Entry struct {
 	Event     *Event
 }
 
-/*
-message Event {
-  string ID = 1;
-  string Name = 2;
-  string AggregateID = 3;
-  string CorrelationID = 4;
-  string CausationID = 5;
-  string ContentType = 6;
-  google.protobuf.Timestamp OccurredAt = 7;
-  map<string, string> Meta = 8;
-  bytes Payload = 9;
-}
-*/
-
 type Event struct {
 	id            string
 	name          string
@@ -41,13 +27,17 @@ type Event struct {
 type EventOpt func(e *Event)
 
 func NewEventAt(id, name, aggregateID string, occurredAt time.Time, payload []byte, opts ...EventOpt) *Event {
-	return &Event{
+	e := &Event{
 		id:          id,
 		name:        name,
 		aggregateID: aggregateID,
 		occurredAt:  occurredAt,
 		payload:     payload,
 	}
+	for _, opt := range opts {
+		opt(e)
+	}
+	return e
 }
 
 func WithCorrelationID(correlationID string) EventOpt {
@@ -113,11 +103,15 @@ func (e *Event) Payload() []byte {
 // MarshalJSON is implementation of json.Marshaler
 func (e *Event) MarshalJSON() ([]byte, error) {
 	v := map[string]any{
-		"Name":        e.name,
-		"ID":          e.id,
-		"AggregateID": e.aggregateID,
-		"Payload":     e.payload,
-		"OccurredAt":  e.occurredAt,
+		"Name":          e.name,
+		"ID":            e.id,
+		"AggregateID":   e.aggregateID,
+		"CorrelationID": e.correlationID,
+		"CausationID":   e.causationID,
+		"ContentType":   e.contentType,
+		"OccurredAt":    e.occurredAt,
+		"Meta":          e.meta,
+		"Payload":       e.payload,
 	}
 	return json.MarshalIndent(v, "", "  ")
 }
@@ -131,9 +125,21 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	e.name = v["Name"].(string)
 	e.id = v["ID"].(string)
 	e.aggregateID = v["AggregateID"].(string)
+	if v["CorrelationID"] != nil {
+		e.correlationID = v["CorrelationID"].(string)
+	}
+	if v["CausationID"] != nil {
+		e.causationID = v["CausationID"].(string)
+	}
+	if v["ContentType"] != nil {
+		e.contentType = v["ContentType"].(string)
+	}
+	e.occurredAt, _ = time.Parse(time.RFC3339Nano, v["OccurredAt"].(string))
+	if v["Meta"] != nil {
+		e.meta = v["Meta"].(map[string]string)
+	}
 	if v["Payload"] != nil {
 		e.payload = []byte(v["Payload"].(string))
 	}
-	e.occurredAt, _ = time.Parse(time.RFC3339Nano, v["OccurredAt"].(string))
 	return nil
 }

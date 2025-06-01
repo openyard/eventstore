@@ -4,7 +4,7 @@ package proto;
 
 option go_package = "eventstore/pkg/genproto/grpcapi;grpcapi";
 
-import public "google/type/date.proto";
+import public "googleapis/google/type/date.proto";
 import "google/protobuf/timestamp.proto";
 
 message Empty {}

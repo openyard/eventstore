@@ -27,12 +27,6 @@ func NewPostgresKVSX(db *sql.DB, _ ...string) *PostgresKVSX {
 }
 
 func (p *PostgresKVSX) Put(bucket string, keys []string, values [][]byte) error {
-	log.Println(bucket)
-	log.Println(len(keys))
-	log.Println(len(values))
-	for i, v := range keys {
-		log.Println(bucket, v, len(values[i]))
-	}
 	_, err := p.db.Exec(upsertBucketValues, bucket, pq.Array(keys), pq.Array(values))
 	assertNoErr(err)
 	return nil
@@ -88,5 +82,5 @@ const (
 	upsertBucketValues = `insert into BUCKETS (BUCKET_ID, BUCKET_KEY, BUCKET_VALUE) select $1,* from unnest($2::text[], $3::bytea[])
 							on conflict on constraint PK_BUCKETS do
 							update set BUCKET_VALUE = EXCLUDED.BUCKET_VALUE`
-	selectBucketValues = `select BUCKET_KEY, BUCKET_VALUE from BUCKETS where BUCKET_ID = $1 AND BUCKET_KEY = unnest($2::text[])`
+	selectBucketValues = `select BUCKET_KEY, BUCKET_VALUE from BUCKETS where BUCKET_ID = $1 AND BUCKET_KEY in (select unnest($2::text[]))`
 )

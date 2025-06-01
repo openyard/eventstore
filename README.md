@@ -2,8 +2,53 @@
 
 ---
 
-Store streams and events via grpc 
+Store streams and events via grpc
 
+### Build
+
+```bash
+make clean      # clean - remove generated sources and built binaries
+make tools      # install tools (protoc-gen*) and update dependencies
+make compile    # generate sources
+make build      # build binary
+make build-all  # build cross-platform binaries
+make build-spec # build test-executable
+make package    # build docker image
+make test       # run unit-test
+make verify     # run test-executable
+make spec       # run acceptance tests
+make sim        # run simulator
+```
+
+### Run
+
+... as single-instance with in-memory key-value storage  
+`./bin/eventstore`
+
+or as distributed service with postgres key-value storage incl. batch-processing
+```bash
+docker run -d --name testdb \
+  -e POSTGRES_USER=testuser \
+  -e POSTGRES_DB=testdb \
+  -e POSTGRES_PASSWORD=11111 \
+  -p 5432:5432 postgres:latest
+
+DB=pgx ./bin/eventstore
+```
+
+### Env
+
+| Key       | Value/Example (* = default) | Description                                           |
+|-----------|-----------------------------|-------------------------------------------------------|
+| DB        | `in-memory`*                | In-Memory Key-Value                                   |
+|           | `pg`                        | Postgres Key-Value                                    |
+|           | `pgx`                       | Postgres experimental Key-Value with batch processing |
+| DB_HOST   | `localhost`*                |                                                       |
+| DB_PORT   | `5432`*                     |                                                       |
+| DB_NAME   | `testdb`*                   |                                                       |
+| DB_USER   | `testdb`*                   |                                                       |
+| DB_PASS   | `11111`*                    |                                                       |
+| DB_PARAMS | `?sslmode=disable`*         |                                                       |
 
 ### Benchmark
 
