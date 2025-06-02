@@ -110,8 +110,11 @@ func (e *Event) MarshalJSON() ([]byte, error) {
 		"CausationID":   e.causationID,
 		"ContentType":   e.contentType,
 		"OccurredAt":    e.occurredAt,
-		"Meta":          e.meta,
+		"Meta":          make(map[string]any, len(e.meta)),
 		"Payload":       e.payload,
+	}
+	for k, val := range e.meta {
+		v["Meta"].(map[string]any)[k] = val
 	}
 	return json.MarshalIndent(v, "", "  ")
 }
@@ -136,7 +139,11 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	}
 	e.occurredAt, _ = time.Parse(time.RFC3339Nano, v["OccurredAt"].(string))
 	if v["Meta"] != nil {
-		e.meta = v["Meta"].(map[string]string)
+		meta := v["Meta"].(map[string]any)
+		e.meta = make(map[string]string, len(meta))
+		for k, v := range meta {
+			e.meta[k] = v.(string)
+		}
 	}
 	if v["Payload"] != nil {
 		e.payload = []byte(v["Payload"].(string))
