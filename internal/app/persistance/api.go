@@ -5,6 +5,7 @@ import "time"
 const (
 	KvsBucketIndex   = "_index"
 	KvsBucketContent = "_content"
+	KvsBucketEntries = "_entries"
 )
 
 // KeyValueStore provides an interface for a key-value-store

@@ -103,21 +103,33 @@ func TestStream_MarshalJSON(t *testing.T) {
   "Events": {
     "1": {
       "AggregateID": "id",
+      "CausationID": "",
+      "ContentType": "",
+      "CorrelationID": "",
       "ID": "cb1801f0-54f9-4928-8f5d-edf8000270d3",
+      "Meta": {},
       "Name": "event-1",
       "OccurredAt": "2024-09-11T21:51:39.810959063Z",
       "Payload": null
     },
     "2": {
       "AggregateID": "id",
+      "CausationID": "",
+      "ContentType": "",
+      "CorrelationID": "",
       "ID": "77b8c58e-779b-4a3a-846c-e70947889c07",
+      "Meta": {},
       "Name": "event-2",
       "OccurredAt": "2024-09-11T21:51:39.810967123Z",
       "Payload": null
     },
     "3": {
       "AggregateID": "id",
+      "CausationID": "",
+      "ContentType": "",
+      "CorrelationID": "",
       "ID": "08a7ac82-6843-4970-983e-1e8c32edad2a",
+      "Meta": {},
       "Name": "event-3",
       "OccurredAt": "2024-09-11T21:51:39.810968821Z",
       "Payload": null

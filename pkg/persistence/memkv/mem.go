@@ -1,7 +1,9 @@
 package memkv
 
 import (
+	"encoding/binary"
 	"fmt"
+	"github.com/openyard/eventstore/internal/app/eventstore/domain"
 	"log"
 	"sync"
 
@@ -21,6 +23,9 @@ type MemoryKVS struct {
 func NewMemoryKVS(buckets ...string) *MemoryKVS {
 	memKVS := &MemoryKVS{buckets: make(map[string]map[string][]byte)}
 	memKVS.assertBuckets(buckets...)
+	globalPos := make([]byte, 8)
+	binary.BigEndian.PutUint64(globalPos, 0)
+	_ = memKVS.Put(persistance.KvsBucketIndex, domain.KeyGlobalPos, globalPos)
 	return memKVS
 }
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 
 	"github.com/openyard/eventstore/internal/app/persistance"
 )
@@ -38,12 +39,6 @@ func (s *KVSService) HandleFunc(cmd Command) error {
 	switch cmd.kind {
 	case AppendCmd:
 		return s.append(cmd.ctx, cmd.payload.(AppendCommand))
-	case SubscribeCmd:
-		// ...
-		return nil
-	case SubscribeWithOffsetCmd:
-		// ...
-		return nil
 	default:
 		return fmt.Errorf("unknown command: <%v>", cmd.kind)
 	}
@@ -60,8 +55,25 @@ func (s *KVSService) QueryFunc(cmd Command) ([]Stream, error) {
 	}
 }
 
+func (s *KVSService) SubscribeFunc(cmd Command) ([]Entry, error) {
+	switch cmd.kind {
+	case SubscribeCmd:
+		// ...
+		return nil, fmt.Errorf("not implemented yet: <%v>", cmd.kind)
+	case SubscribeWithOffsetCmd:
+		// ...
+		return nil, fmt.Errorf("not implemented yet: <%v>", cmd.kind)
+	default:
+		return nil, fmt.Errorf("unknown command: <%v>", cmd.kind)
+	}
+}
+
 func (s *KVSService) append(_ context.Context, cmd AppendCommand) error {
 	if err := s.kvs.WithTx(func() error {
+		pos, err := s.readLogIndex()
+		if err != nil {
+			return err
+		}
 		for _, streamData := range cmd.streamData {
 			version, err := s.kvs.Get(persistance.KvsBucketIndex, streamData.name)
 			if err != nil && (streamData.expectedVersion > 0 || version == nil) {
@@ -80,22 +92,33 @@ func (s *KVSService) append(_ context.Context, cmd AppendCommand) error {
 				return err
 			}
 
-			log.Printf("[DEBUG]\t %T.append - getEntries: %+v", s, stream.events)
-			var raw []byte
-			raw, err = stream.MarshalJSON()
-			if err != nil {
-				log.Printf("[ERROR]\t %T.append - marshaling error: %s", s, err)
+			/*
+				_index:   key=streamID, value=version
+				_content: key=streamID, value=map[streamPos]globalPos
+				_entries: key=globalPos, value=event
+			*/
+			_content := Content{streamID: stream.Name(), positions: make(map[uint64]uint64)}
+			for idx, event := range stream.events {
+				pos += 1
+				_content.positions[idx] = pos
+				entry, err := event.MarshalJSON()
+				if err != nil {
+					return err
+				}
+				if err = s.kvs.Put(persistance.KvsBucketEntries, strconv.FormatUint(pos, 10), entry); err != nil {
+					return err
+				}
+			}
+			content, err := _content.MarshalJSON()
+			if err := s.kvs.Put(persistance.KvsBucketContent, stream.name, content); err != nil {
 				return err
 			}
-			log.Printf("[TRACE]\t %T.append - raw stream: %s", s, string(raw))
-			idx := make([]byte, 8)
-			binary.BigEndian.PutUint64(idx, stream.version)
-			if err := s.kvs.Put(persistance.KvsBucketContent, stream.name, raw); err != nil {
+			streamVersion := make([]byte, 8)
+			binary.BigEndian.PutUint64(streamVersion, stream.version)
+			if err := s.kvs.Put(persistance.KvsBucketIndex, stream.name, streamVersion); err != nil {
 				return err
 			}
-			if err := s.kvs.Put(persistance.KvsBucketIndex, stream.name, idx); err != nil {
-				return err
-			}
+
 		}
 		return nil
 	}); err != nil {
@@ -107,15 +130,23 @@ func (s *KVSService) append(_ context.Context, cmd AppendCommand) error {
 func (s *KVSService) read(_ context.Context, cmd ReadCommand) ([]Stream, error) {
 	result := make([]Stream, 0)
 	for _, stream := range cmd.streams {
-		streamData, err := s.kvs.Get(persistance.KvsBucketContent, stream)
+		contentData, err := s.kvs.Get(persistance.KvsBucketContent, stream)
 		if err != nil {
 			return result, err
 		}
-		var elem Stream
-		if err := elem.UnmarshalJSON(streamData); err != nil {
+		var content Content
+		if err := content.UnmarshalJSON(contentData); err != nil {
 			return result, err
 		}
-		if uint64(len(elem.events)) != elem.version {
+		streamData, err := s.kvs.Get(persistance.KvsBucketEntries, stream)
+		if err != nil {
+			return result, err
+		}
+		var stream Stream
+		if err := stream.UnmarshalJSON(streamData); err != nil {
+			return result, err
+		}
+		if uint64(len(elem.)) != elem.version {
 			return result, fmt.Errorf("[ERROR]\t %T.read !!! version mismatch in stream <%s>: version=%d, events=%d",
 				s, elem.name, elem.version, len(elem.events))
 		}
@@ -156,7 +187,7 @@ func (s *KVSService) firstAppend(streamData StreamData) *Stream {
 		return streamData.events[i].OccurredAt().Before(streamData.events[j].OccurredAt())
 	})
 	entries := getEntries(streamData)
-	return buildStream(streamData.name, uint64(len(entries)), entries)
+	return buildStream(streamData.name, 0, entries)
 }
 
 func (s *KVSService) nextAppend(streamData StreamData) (*Stream, error) {
@@ -176,10 +207,10 @@ func (s *KVSService) nextAppend(streamData StreamData) (*Stream, error) {
 	return &stream, nil
 }
 
-func getEntries(streamData StreamData) map[uint64]*Event {
-	entries := make(map[uint64]*Event, len(streamData.events))
-	for idx, e := range streamData.events {
-		entries[uint64(idx)] = e
+func (s *KVSService) readLogIndex() (uint64, error) {
+	value, err := s.kvs.Get(persistance.KvsBucketIndex, KeyGlobalPos)
+	if err != nil {
+		return 0, err
 	}
-	return entries
+	return binary.BigEndian.Uint64(value), nil
 }

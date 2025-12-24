@@ -35,7 +35,7 @@ var (
 		_, _ = fmt.Fprintf(os.Stderr, "  start eventstore\n")
 		flag.PrintDefaults()
 	}
-	buckets = []string{persistance.KvsBucketIndex, persistance.KvsBucketContent}
+	buckets = []string{persistance.KvsBucketIndex, persistance.KvsBucketContent, persistance.KvsBucketEntries}
 )
 
 func main() {

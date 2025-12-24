@@ -20,17 +20,12 @@ func (s *Stream) Name() string {
 	return s.name
 }
 
-func (s *Stream) Events() map[uint64]*Event {
-	return s.events
+func (s *Stream) Version() uint64 {
+	return s.version
 }
 
-// buildStream builds a stream from provided events and applies the current version and name to it
-func buildStream(name string, version uint64, events map[uint64]*Event) *Stream {
-	return &Stream{
-		name:    name,
-		version: version,
-		events:  events,
-	}
+func (s *Stream) Events() map[uint64]*Event {
+	return s.events
 }
 
 func (s *Stream) MarshalJSON() ([]byte, error) {
@@ -71,4 +66,29 @@ func (s *Stream) UnmarshalJSON(data []byte) error {
 func (s *Stream) String() string {
 	b, _ := s.MarshalJSON()
 	return string(b)
+}
+
+// buildStream builds a stream from provided events and applies the current version and name to it
+func buildStream(name string, version uint64, events map[uint64]*Event) *Stream {
+	return &Stream{
+		name:    name,
+		version: assertVersion(version, len(events)),
+		events:  events,
+	}
+}
+
+func assertVersion(version uint64, i int) uint64 {
+	if version == 0 {
+		return uint64(i)
+	}
+	return version + uint64(i)
+}
+
+// getEntries returns the events from given stream-data as indexed map
+func getEntries(streamData StreamData) map[uint64]*Event {
+	entries := make(map[uint64]*Event, len(streamData.events))
+	for idx, e := range streamData.events {
+		entries[uint64(idx)] = e
+	}
+	return entries
 }

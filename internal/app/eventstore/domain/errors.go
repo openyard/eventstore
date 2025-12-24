@@ -6,4 +6,5 @@ const (
 	ErrConcurrentChange
 	ErrMisconfiguration
 	ErrListen
+	ErrLogIndex
 )
